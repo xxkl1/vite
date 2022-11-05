@@ -3,6 +3,8 @@ import resolve from 'resolve-from'
 import { sendJSStream } from './utils'
 import { ServerResponse } from 'http'
 
+const log = console.log.bind(console)
+
 const fileToIdMap = new Map()
 
 export function resolveModule(id: string, cwd: string, res: ServerResponse) {
@@ -23,11 +25,15 @@ export function resolveModule(id: string, cwd: string, res: ServerResponse) {
   // fallback to node resolve
   try {
     modulePath = resolve(cwd, `${id}/package.json`)
+    log('cwd:', cwd)
+    log('id:', id)
+    log('modulePath2:', modulePath)
     if (id === 'vue') {
       modulePath = path.join(
         path.dirname(modulePath),
         'dist/vue.runtime.esm-browser.js'
       )
+      log('modulePath3:', modulePath)
     } else {
       // module resolved, try to locate its "module" entry
       const pkg = require(modulePath)
@@ -39,6 +45,7 @@ export function resolveModule(id: string, cwd: string, res: ServerResponse) {
       }
     }
 
+    console.log('modulePath:', modulePath)
     sendJSStream(res, modulePath)
   } catch (e) {
     console.error(e)

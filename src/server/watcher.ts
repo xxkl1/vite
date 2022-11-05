@@ -34,6 +34,8 @@ export function createFileWatcher(
         return
       }
 
+      console.log('descriptor.script:', descriptor.script)
+      console.log('prevDescriptor.script:', prevDescriptor.script)
       if (!isEqual(descriptor.script, prevDescriptor.script)) {
         send({
           type: 'reload',
@@ -43,6 +45,7 @@ export function createFileWatcher(
       }
 
       if (!isEqual(descriptor.template, prevDescriptor.template)) {
+        console.log('\x1B[31m%s\x1B[0m', `resourcePath:${resourcePath}`)
         send({
           type: 'rerender',
           path: resourcePath

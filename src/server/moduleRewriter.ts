@@ -1,6 +1,9 @@
 import { parse } from '@babel/parser'
 import MagicString from 'magic-string'
+// const log = console.log.bind(console)
 
+// 修改js文件的导入语法和导出语法，主要是
+// // import { foo } from 'vue' --> import { foo } from '/__modules/vue'
 export function rewrite(source: string, asSFCScript = false) {
   const ast = parse(source, {
     sourceType: 'module',

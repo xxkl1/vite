@@ -13,8 +13,10 @@ let browser
 jest.setTimeout(100000)
 
 beforeAll(async () => {
-  await fs.rmdir(tempDir, { recursive: true })
+  // 删除缓存文件夹
+  // await fs.rmdir(tempDir, { recursive: true })
   await fs.mkdir(tempDir)
+  // 复制文件到temp目录
   for (const file of await fs.readdir(fixtureDir)) {
     await fs.copyFile(
       path.join(__dirname, 'fixtures', file),

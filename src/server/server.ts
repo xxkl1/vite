@@ -10,6 +10,8 @@ import { createFileWatcher } from './watcher'
 import { sendJS } from './utils'
 import { rewrite } from './moduleRewriter'
 
+const log = console.log.bind(console)
+
 export interface ServerConfig {
   port?: number
   cwd?: string
@@ -22,12 +24,15 @@ export async function createServer({
   const hmrClientCode = await fs.readFile(
     path.resolve(__dirname, '../client/client.js')
   )
+  log('createServer')
 
   const server = http.createServer(async (req, res) => {
     const pathname = url.parse(req.url!).pathname!
+    log('pathname:\n', pathname)
     if (pathname === '/__hmrClient') {
       return sendJS(res, hmrClientCode)
     } else if (pathname.startsWith('/__modules/')) {
+      // __modules，会指定到对应的node_modules的目录下的文件
       return resolveModule(pathname.replace('/__modules/', ''), cwd, res)
     } else if (pathname.endsWith('.vue')) {
       return vueMiddleware(cwd, req, res)
@@ -35,7 +40,8 @@ export async function createServer({
       const filename = path.join(cwd, pathname.slice(1))
       try {
         const content = await fs.readFile(filename, 'utf-8')
-        return sendJS(res, rewrite(content))
+        const cNew = rewrite(content)
+        return sendJS(res, rewrite(cNew))
       } catch (e) {
         if (e.code === 'ENOENT') {
           // fallthrough to serve-handler
@@ -45,8 +51,10 @@ export async function createServer({
       }
     }
 
+    // 如果上面的都不是，那么静态服务器运行index.html
     serve(req, res, {
       public: cwd ? path.relative(process.cwd(), cwd) : '/',
+      // 这句话是，无论访问任何路径，都重定向到index.html
       rewrites: [{ source: '**', destination: '/index.html' }]
     })
   })

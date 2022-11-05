@@ -13,7 +13,7 @@ import {
 import { sendJS } from './utils'
 import { rewrite } from './moduleRewriter'
 import hash from 'hash-sum'
-
+const log = console.log.bind(console)
 const cache = new Map()
 
 export async function parseSFC(
@@ -46,14 +46,20 @@ export async function vueMiddleware(
   req: IncomingMessage,
   res: ServerResponse
 ) {
+  log('-----------vueMiddleware----------------')
   const parsed = url.parse(req.url!, true)
   const pathname = parsed.pathname!
-  const query = parsed.query
+  log('pathname:', pathname)
+  const query = parsed.query!
+  log('query:', null)
   const filename = path.join(cwd, pathname.slice(1))
+  log('parsed:', parsed)
+  log('filename:', filename)
   const [descriptor] = await parseSFC(
     filename,
     true /* save last accessed descriptor on the client */
   )
+  log('descriptor:', descriptor)
   if (!descriptor) {
     res.statusCode = 404
     return res.end()
@@ -118,6 +124,8 @@ function compileSFCMain(
     code += `\n__script.render = __render`
   }
   code += `\n__script.__hmrId = ${JSON.stringify(pathname)}`
+  log('code:', code)
+  console.log('\x1B[31m%s\x1B[0m', 'code end')
   sendJS(res, code)
 }
 
@@ -140,6 +148,8 @@ function compileSFCTemplate(
   if (errors) {
     // TODO
   }
+  // 编译出来的是render函数
+  log('compileTemplate:', code)
   sendJS(res, code)
 }
 
